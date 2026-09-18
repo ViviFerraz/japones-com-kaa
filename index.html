@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Flashcards diários de japonês — vocabulário em hiragana/katakana e kanji, nível N5-N4. Um desafio novo por dia.">
+<link rel="canonical" href="https://nihongokaa.com/">
 <meta property="og:title" content="Japonês com Kaa">
 <meta property="og:description" content="Flashcards diários de japonês — um desafio novo por dia.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://nihongokaa.com/">
+<meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%A6%E2%80%8D%E2%AC%9B%3C/text%3E%3C/svg%3E">
 <title>Japonês com Kaa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -379,7 +382,7 @@
     cursor:pointer;
     transition:background .12s ease, border-color .12s ease;
   }
-  .opt:hover:not(:disabled){ border-color:var(--ink-dim); }
+  .options:not(.no-hover) .opt:hover:not(:disabled){ border-color:var(--ink-dim); }
   .opt:disabled{ cursor:default; }
   .opt.correct{ background:var(--accent-soft); border-color:var(--accent); }
   .opt.wrong{ background:var(--danger-soft); border-color:var(--danger); }
@@ -522,7 +525,7 @@
       streak:function(n){ return "sequência: " + n + (n===1?" dia":" dias"); },
       ask:"O que significa?", correct:"🥚 Certo!", wasPrefix:"❌ Era:",
       back:"Voltar", exit:"Sair", copy:"Copiar resultado",
-      adLabel:"Espaço publicitário",
+      adLabel:"Anuncie aqui",
       shareText:function(label, day, score, total, grid){
         return "🐦‍⬛ " + this.mascotFx + "  Fiz o desafio de " + label.toLowerCase() + " #" + day + " do Japonês com Kaa\n"
           + score + "/" + total + " — " + grid;
@@ -541,7 +544,7 @@
       streak:function(n){ return "streak: " + n + (n===1?" day":" days"); },
       ask:"What does it mean?", correct:"🥚 Correct!", wasPrefix:"❌ It was:",
       back:"Back", exit:"Exit", copy:"Copy result",
-      adLabel:"Ad space",
+      adLabel:"Advertise here",
       shareText:function(label, day, score, total, grid){
         return "🐦‍⬛ " + this.mascotFx + "  I did today's " + label.toLowerCase() + " challenge #" + day + " from Japonês com Kaa\n"
           + score + "/" + total + " — " + grid;
@@ -704,9 +707,9 @@
     return keyFromDate(d);
   }
   function dayNumber(key){
-    var epoch = new Date("2025-01-01T00:00:00");
+    var launchDay = new Date("2026-09-18T00:00:00");
     var d = new Date(key+"T00:00:00");
-    return Math.round((d-epoch)/86400000);
+    return Math.round((d-launchDay)/86400000) + 1;
   }
 
   // ---------- persisted per-game state ----------
@@ -859,8 +862,8 @@
       + (conf.showReading ? '<span class="reading">' + item.reading + '</span>' : '')
       + '<span class="ask">' + s.ask + '</span>'
       + '</div>'
-      + '<div class="options">' + q.opts.map(function(optIdx,i){
-          return '<button class="opt" data-i="' + i + '">' + list[optIdx].meaning[app.lang] + '</button>';
+      + '<div class="options no-hover">' + q.opts.map(function(optIdx,i){
+          return '<button class="opt" type="button" data-i="' + i + '">' + list[optIdx].meaning[app.lang] + '</button>';
         }).join("") + '</div>'
       + '<div class="feedback" id="feedback"></div>';
 
@@ -868,11 +871,22 @@
     panelEl.querySelectorAll(".opt").forEach(function(btn){
       btn.addEventListener("click", function(){ selectAnswer(parseInt(btn.getAttribute("data-i"),10)); });
     });
+
+    // o hover só vale depois que o mouse realmente se mexe: sem isso o botão que
+    // nasce sob o cursor já aparece destacado na pergunta seguinte
+    var optionsEl = panelEl.querySelector(".options");
+    if (optionsEl){
+      document.addEventListener("pointermove", function enableHover(){
+        optionsEl.classList.remove("no-hover");
+        document.removeEventListener("pointermove", enableHover);
+      });
+    }
   }
 
   function selectAnswer(i){
     if (app.answered) return;
     app.answered = true;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     var s = S();
     var game = app.activeGame;
     var conf = GAMES[game];
