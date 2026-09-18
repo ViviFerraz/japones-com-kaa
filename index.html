@@ -5,11 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Flashcards diários de japonês — vocabulário em hiragana/katakana e kanji, nível N5-N4. Um desafio novo por dia.">
 <link rel="canonical" href="https://nihongokaa.com/">
+<meta property="og:site_name" content="Japonês com Kaa">
 <meta property="og:title" content="Japonês com Kaa">
 <meta property="og:description" content="Flashcards diários de japonês — um desafio novo por dia.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://nihongokaa.com/">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://nihongokaa.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Kaa, o corvo mascote, ao lado do texto Kaa! ensina japonês">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Japonês com Kaa">
+<meta name="twitter:description" content="Flashcards diários de japonês — um desafio novo por dia.">
+<meta name="twitter:image" content="https://nihongokaa.com/og.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%A6%E2%80%8D%E2%AC%9B%3C/text%3E%3C/svg%3E">
 <title>Japonês com Kaa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -263,17 +271,20 @@
   .btn-full{ width:100%; }
 
   .today-pill{
-    display:inline-flex;
+    width:100%;
+    display:flex;
     align-items:center;
+    justify-content:space-between;
     gap:10px;
     background:var(--surface);
     border:1px solid var(--line);
     border-radius:var(--radius-pill);
     padding:10px 16px;
-    font-size:13px;
+    font-size:12.5px;
     font-weight:700;
+    white-space:nowrap;
   }
-  .today-pill .grid-preview{ font-size:15px; letter-spacing:3px; }
+  .today-pill .grid-preview{ font-size:12px; letter-spacing:.5px; white-space:nowrap; }
   .btn-copy-text{
     background:none;
     border:none;
@@ -287,6 +298,72 @@
     padding:2px 4px;
   }
   .btn-copy-text:hover{ color:var(--ink); }
+
+  .btn-tiktok{
+    width:100%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    background:transparent;
+    border:1px solid var(--line-strong);
+    color:var(--ink);
+    border-radius:var(--radius-pill);
+    padding:13px 20px;
+    font-family:"Archivo",sans-serif;
+    font-size:13.5px;
+    font-weight:700;
+    text-decoration:none;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .btn-tiktok:hover{ border-color:var(--primary); background:rgba(255,151,54,.08); }
+  .btn-tiktok .tt-icon{
+    width:22px; height:22px;
+    border-radius:6px;
+    background:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .btn-tiktok .tt-icon svg{ width:12px; height:12px; }
+
+  /* aviso que aparece depois de copiar o resultado */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:20px;
+    transform:translateX(-50%) translateY(12px);
+    z-index:50;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    max-width:min(460px, calc(100vw - 32px));
+    background:var(--surface);
+    border:1px solid var(--line-strong);
+    border-radius:16px;
+    padding:14px 16px;
+    box-shadow:0 18px 40px -12px rgba(0,0,0,.7);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto; }
+  .toast-text{ font-size:13px; font-weight:700; line-height:1.35; }
+  .toast-text small{ display:block; font-weight:600; color:var(--ink-dim); font-size:12px; margin-top:2px; }
+  .toast .btn-tiktok{ width:auto; white-space:nowrap; padding:10px 16px; font-size:12.5px; }
+  .toast-close{
+    background:none; border:none; color:var(--ink-dim);
+    font-size:18px; line-height:1; cursor:pointer; padding:2px 4px;
+  }
+  .toast-close:hover{ color:var(--ink); }
+  @media (max-width:520px){
+    .toast{ flex-wrap:wrap; padding-right:38px; }
+    .toast .btn-tiktok{ width:100%; }
+    .toast-close{ position:absolute; top:10px; right:10px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .toast{ transition:opacity .15s ease; transform:translateX(-50%); }
+    .toast.show{ transform:translateX(-50%); }
+  }
   .streak-line{ font-size:12.5px; font-weight:700; color:var(--ink-dim); margin-top:4px; }
 
   /* quiz panel */
@@ -508,6 +585,19 @@
   </footer>
 </div>
 
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="toast-text" id="toastText"></span>
+  <a class="btn-tiktok" id="toastCta" href="https://www.tiktok.com/@japonescomkaa" target="_blank" rel="noopener noreferrer">
+    <span class="tt-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16.5 3c.4 2.2 2 3.9 4.3 4.2v3.1c-1.6.1-3-.4-4.3-1.3v6.6c0 3.4-2.7 6.1-6.1 6.1S4.3 19 4.3 15.6c0-3.3 2.6-6 5.9-6.1v3.2c-1.5.2-2.7 1.5-2.7 3 0 1.7 1.4 3 3 3s3-1.4 3-3V3h3z" fill="#1C1B1F"/>
+      </svg>
+    </span>
+    <span id="toastCtaText"></span>
+  </a>
+  <button class="toast-close" id="toastClose" aria-label="Fechar">×</button>
+</div>
+
 <script>
 (function(){
 
@@ -526,6 +616,10 @@
       ask:"O que significa?", correct:"🥚 Certo!", wasPrefix:"❌ Era:",
       back:"Voltar", exit:"Sair", copy:"Copiar resultado",
       adLabel:"Anuncie aqui",
+      followTikTok:"Seguir no TikTok",
+      toastCopied:"Resultado copiado!",
+      toastHint:"Cola nos comentários do TikTok e marca o Kaa",
+      toastCta:"Abrir TikTok",
       shareText:function(label, day, score, total, grid){
         return "🐦‍⬛ " + this.mascotFx + "  Fiz o desafio de " + label.toLowerCase() + " #" + day + " do Japonês com Kaa\n"
           + score + "/" + total + " — " + grid;
@@ -545,6 +639,10 @@
       ask:"What does it mean?", correct:"🥚 Correct!", wasPrefix:"❌ It was:",
       back:"Back", exit:"Exit", copy:"Copy result",
       adLabel:"Advertise here",
+      followTikTok:"Follow on TikTok",
+      toastCopied:"Result copied!",
+      toastHint:"Paste it in the TikTok comments and tag Kaa",
+      toastCta:"Open TikTok",
       shareText:function(label, day, score, total, grid){
         return "🐦‍⬛ " + this.mascotFx + "  I did today's " + label.toLowerCase() + " challenge #" + day + " from Japonês com Kaa\n"
           + score + "/" + total + " — " + grid;
@@ -733,6 +831,11 @@
   var difftabsEl = document.getElementById("difftabs");
   var daynumEl = document.getElementById("daynum");
   var adTopEl = document.getElementById("adTop");
+  var toastEl = document.getElementById("toast");
+  var toastTextEl = document.getElementById("toastText");
+  var toastCtaTextEl = document.getElementById("toastCtaText");
+  document.getElementById("toastClose").addEventListener("click", hideToast);
+  document.getElementById("toastCta").addEventListener("click", hideToast);
 
   function S(){ return STRINGS[app.lang]; }
   function squareRow(grid){
@@ -794,7 +897,10 @@
     homeEl.innerHTML = ""
       + '<div class="mascot">' + mascotImg(s.mascotFx) + '</div>'
       + '<h2>' + s.homeQuestion + '</h2>'
-      + '<div class="home-actions">' + actions + '</div>';
+      + '<div class="home-actions">' + actions
+      + '<a class="btn-tiktok" href="https://www.tiktok.com/@japonescomkaa" target="_blank" rel="noopener noreferrer">'
+      + ttIcon() + s.followTikTok + '</a>'
+      + '</div>';
 
     homeEl.querySelectorAll("[data-play]").forEach(function(btn){
       btn.addEventListener("click", function(){ startGame(btn.getAttribute("data-play")); });
@@ -803,6 +909,25 @@
       btn.addEventListener("click", function(){ copyResult(btn.getAttribute("data-copy")); });
     });
     app.activeGame = null;
+  }
+
+  function ttIcon(){
+    return '<span class="tt-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      + '<path d="M16.5 3c.4 2.2 2 3.9 4.3 4.2v3.1c-1.6.1-3-.4-4.3-1.3v6.6c0 3.4-2.7 6.1-6.1 6.1S4.3 19 4.3 15.6c0-3.3 2.6-6 5.9-6.1v3.2c-1.5.2-2.7 1.5-2.7 3 0 1.7 1.4 3 3 3s3-1.4 3-3V3h3z" fill="#1C1B1F"/>'
+      + '</svg></span>';
+  }
+
+  function showToast(){
+    var s = S();
+    toastTextEl.innerHTML = s.toastCopied + '<small>' + s.toastHint + '</small>';
+    toastCtaTextEl.textContent = s.toastCta;
+    toastEl.classList.add("show");
+    clearTimeout(toastEl._hideTimer);
+    toastEl._hideTimer = setTimeout(hideToast, 9000);
+  }
+  function hideToast(){
+    clearTimeout(toastEl._hideTimer);
+    toastEl.classList.remove("show");
   }
 
   function copyResult(game){
@@ -814,6 +939,7 @@
     if (navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(text).catch(function(){});
     }
+    showToast();
   }
 
   function startGame(game){
