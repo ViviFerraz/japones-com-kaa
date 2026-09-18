@@ -519,8 +519,8 @@
       mascotFx:"カアア!",
       homeQuestion:"Consegue acertar as palavras do dia?",
       vocabEyebrow:"Vocabulário", kanjiEyebrow:"Kanji",
-      vocabDesc:"8 palavras em hiragana/katakana, múltipla escolha: qual o significado?",
-      kanjiDesc:"8 kanjis isolados, múltipla escolha: qual o significado?",
+      vocabDesc:"7 palavras em hiragana/katakana, múltipla escolha: qual o significado?",
+      kanjiDesc:"7 kanjis isolados, múltipla escolha: qual o significado?",
       playVocab:"Jogar vocabulário", playKanji:"Jogar kanji", playAgain:"Jogar novamente",
       streak:function(n){ return "sequência: " + n + (n===1?" dia":" dias"); },
       ask:"O que significa?", correct:"🥚 Certo!", wasPrefix:"❌ Era:",
@@ -538,8 +538,8 @@
       mascotFx:"KAAA!",
       homeQuestion:"Can you get today's words right?",
       vocabEyebrow:"Vocabulary", kanjiEyebrow:"Kanji",
-      vocabDesc:"8 hiragana/katakana words, multiple choice: what does it mean?",
-      kanjiDesc:"8 standalone kanji, multiple choice: what does it mean?",
+      vocabDesc:"7 hiragana/katakana words, multiple choice: what does it mean?",
+      kanjiDesc:"7 standalone kanji, multiple choice: what does it mean?",
       playVocab:"Play vocabulary", playKanji:"Play kanji", playAgain:"Play again",
       streak:function(n){ return "streak: " + n + (n===1?" day":" days"); },
       ask:"What does it mean?", correct:"🥚 Correct!", wasPrefix:"❌ It was:",
@@ -682,7 +682,7 @@
     }
     return a;
   }
-  var QUESTIONS_PER_DAY = 8;
+  var QUESTIONS_PER_DAY = 7;
 
   function pickDaily(game, dateKey){
     var seedGen = xmur3(dateKey+"::"+game);
