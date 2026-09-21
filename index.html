@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Flashcards diários de japonês — vocabulário em hiragana/katakana e kanji, nível N5-N4. Um desafio novo por dia.">
+<meta name="description" content="Flashcards diários de japonês — vocabulário e kanji, dos níveis N5 ao N2. Um desafio novo por dia.">
 <link rel="canonical" href="https://nihongokaa.com/">
 <meta property="og:site_name" content="Japonês com Kaa">
 <meta property="og:title" content="Japonês com Kaa">
@@ -94,26 +94,7 @@
     cursor:pointer;
   }
   .difftab.active{ color:var(--ink); border-bottom-color:var(--ink); }
-  .difftab.soon{ color:var(--ink-faint); font-weight:600; cursor:pointer; }
-  .difftab:not(.soon):hover{ color:var(--ink); }
-
-  .tab-tooltip{
-    position:absolute;
-    bottom:calc(100% + 8px);
-    left:50%;
-    transform:translateX(-50%) translateY(4px);
-    background:var(--ink);
-    color:#1C1B1F;
-    font-size:11px;
-    font-weight:700;
-    padding:5px 10px;
-    border-radius:6px;
-    white-space:nowrap;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .15s ease, transform .15s ease;
-  }
-  .tab-tooltip.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .difftab:hover{ color:var(--ink); }
 
   .wordmark{
     font-size:17px;
@@ -153,6 +134,16 @@
     font-weight:700;
     color:var(--ink-dim);
     font-variant-numeric:tabular-nums;
+  }
+  .jlpt-tag{
+    display:inline-block;
+    margin-left:6px;
+    padding:3px 8px;
+    border:1px solid var(--line);
+    border-radius:var(--radius-pill);
+    font-size:11px;
+    letter-spacing:.04em;
+    color:var(--ink-dim);
   }
 
   /* ad slots */
@@ -615,12 +606,10 @@
   var STRINGS = {
     pt: {
       wordmark:"Kaa! ensina japonês",
-      diffEasy:"Fácil", diffMed:"Médio", diffHard:"Difícil", soon:"Em breve",
+      diffEasy:"Fácil", diffMed:"Médio", diffHard:"Difícil",
       mascotFx:"カアア!",
       homeQuestion:"Consegue acertar as palavras do dia?",
       vocabEyebrow:"Vocabulário", kanjiEyebrow:"Kanji",
-      vocabDesc:"7 palavras em hiragana/katakana, múltipla escolha: qual o significado?",
-      kanjiDesc:"7 kanjis isolados, múltipla escolha: qual o significado?",
       playVocab:"Jogar vocabulário", playKanji:"Jogar kanji", playAgain:"Jogar novamente",
       streak:function(n){ return "sequência: " + n + (n===1?" dia":" dias"); },
       ask:"O que significa?", correct:"🥚 Certo!", wasPrefix:"❌ Era:",
@@ -637,12 +626,10 @@
     },
     en: {
       wordmark:"Kaa! teaches Japanese",
-      diffEasy:"Easy", diffMed:"Medium", diffHard:"Hard", soon:"Coming soon",
+      diffEasy:"Easy", diffMed:"Medium", diffHard:"Hard",
       mascotFx:"KAAA!",
       homeQuestion:"Can you get today's words right?",
       vocabEyebrow:"Vocabulary", kanjiEyebrow:"Kanji",
-      vocabDesc:"7 hiragana/katakana words, multiple choice: what does it mean?",
-      kanjiDesc:"7 standalone kanji, multiple choice: what does it mean?",
       playVocab:"Play vocabulary", playKanji:"Play kanji", playAgain:"Play again",
       streak:function(n){ return "streak: " + n + (n===1?" day":" days"); },
       ask:"What does it mean?", correct:"🥚 Correct!", wasPrefix:"❌ It was:",
@@ -667,97 +654,220 @@
     return (navigator.language||"").toLowerCase().indexOf("pt") === 0 ? "pt" : "en";
   }
   function saveLang(lang){ try{ localStorage.setItem("jck_lang", lang); }catch(e){} }
+  function loadLevel(){
+    try{
+      var saved = localStorage.getItem("jck_level");
+      if (saved === "easy" || saved === "medium" || saved === "hard") return saved;
+    }catch(e){}
+    return "easy";
+  }
+  function saveLevel(level){ try{ localStorage.setItem("jck_level", level); }catch(e){} }
 
   // ---------- data: [jp, reading, pt, en] ----------
+  // vocabulário: [kana, kanji, romaji, pt, en, nível JLPT]
   var VOCAB_RAW = [
-    ["わたし","watashi","eu","I"],["あなた","anata","você","you"],["きょう","kyou","hoje","today"],
-    ["あした","ashita","amanhã","tomorrow"],["きのう","kinou","ontem","yesterday"],["がっこう","gakkou","escola","school"],
-    ["せんせい","sensei","professor(a)","teacher"],["がくせい","gakusei","estudante","student"],["ともだち","tomodachi","amigo(a)","friend"],
-    ["かぞく","kazoku","família","family"],["みず","mizu","água","water"],["ひ","hi","fogo","fire"],
-    ["やま","yama","montanha","mountain"],["かわ","kawa","rio","river"],["そら","sora","céu","sky"],
-    ["あめ","ame","chuva","rain"],["いぬ","inu","cachorro","dog"],["ねこ","neko","gato","cat"],
-    ["さかな","sakana","peixe","fish"],["とり","tori","pássaro","bird"],["たべもの","tabemono","comida","food"],
-    ["のみもの","nomimono","bebida","drink"],["ほん","hon","livro","book"],["くるま","kuruma","carro","car"],
-    ["でんしゃ","densha","trem","train"],["えき","eki","estação","station"],["かいしゃ","kaisha","empresa","company"],
-    ["しごと","shigoto","trabalho","job"],["じかん","jikan","tempo / hora","time"],["てんき","tenki","clima","weather"],
-    ["げんき","genki","saúde / disposição","energetic / well"],["すき","suki","gostar","to like"],["きらい","kirai","não gostar","to dislike"],
-    ["おおきい","ookii","grande","big"],["ちいさい","chiisai","pequeno","small"],["あたらしい","atarashii","novo","new"],
-    ["ふるい","furui","antigo / velho","old"],["たかい","takai","caro / alto","expensive / tall"],["やすい","yasui","barato","cheap"],
-    ["いそがしい","isogashii","ocupado","busy"],["たのしい","tanoshii","divertido","fun"],["むずかしい","muzukashii","difícil","difficult"],
-    ["かんたん","kantan","fácil / simples","easy / simple"],["まいにち","mainichi","todo dia","every day"],["いっしょに","issho ni","juntos","together"],
-    ["すこし","sukoshi","um pouco","a little"],["たくさん","takusan","muito / bastante","a lot"],["ぜんぶ","zenbu","tudo","everything"],
-    ["たんじょうび","tanjoubi","aniversário","birthday"],["かいもの","kaimono","compras","shopping"],
-    ["けいけん","keiken","experiência","experience"],["せつめい","setsumei","explicação","explanation"],
-    ["じゅんび","junbi","preparação","preparation"],["しんぱい","shinpai","preocupação","worry"],
-    ["きけん","kiken","perigo","danger"],["あんぜん","anzen","segurança","safety"],
-    ["しゅうかん","shuukan","hábito","habit"],["けいざい","keizai","economia","economy"],
-    ["せいじ","seiji","política","politics"],["ぶんか","bunka","cultura","culture"],
-    ["れきし","rekishi","história","history"],["ちず","chizu","mapa","map"],
-    ["りょこう","ryokou","viagem","travel"],["しょうたい","shoutai","convite","invitation"],
-    ["やくそく","yakusoku","promessa","promise"],["そうだん","soudan","consulta","consultation"],
-    ["よてい","yotei","plano","schedule"],["もくてき","mokuteki","objetivo","purpose"],
-    ["りゆう","riyuu","motivo","reason"],["いけん","iken","opinião","opinion"],
-    ["しつもん","shitsumon","pergunta","question"],["へんじ","henji","resposta","reply"],
-    ["れんらく","renraku","contato","contact"],["かいぎ","kaigi","reunião","meeting"],
-    ["しゅっちょう","shucchou","viagem de trabalho","business trip"],["ざんぎょう","zangyou","hora extra","overtime"],
-    ["きゅうりょう","kyuuryou","salário","salary"],["けいやく","keiyaku","contrato","contract"],
-    ["かんきょう","kankyou","meio ambiente","environment"],["しぜん","shizen","natureza","nature"],
-    ["たてもの","tatemono","prédio","building"],["へや","heya","quarto","room"],
-    ["だいどころ","daidokoro","cozinha","kitchen"],["れいぞうこ","reizouko","geladeira","fridge"],
-    ["ふとん","futon","futon","futon (bedding)"],["せんたく","sentaku","lavagem de roupa","laundry"],
-    ["そうじ","souji","limpeza","cleaning"],["うんどう","undou","exercício","exercise"],
-    ["けんこう","kenkou","saúde","health"],["せいかく","seikaku","personalidade","personality"]
+    ["わたし","私","watashi","eu","I","N5"],["あなた","あなた","anata","você","you","N5"],
+    ["きょう","今日","kyou","hoje","today","N5"],["あした","明日","ashita","amanhã","tomorrow","N5"],
+    ["きのう","昨日","kinou","ontem","yesterday","N5"],["がっこう","学校","gakkou","escola","school","N5"],
+    ["せんせい","先生","sensei","professor(a)","teacher","N5"],["がくせい","学生","gakusei","estudante","student","N5"],
+    ["ともだち","友達","tomodachi","amigo(a)","friend","N5"],["かぞく","家族","kazoku","família","family","N5"],
+    ["みず","水","mizu","água","water","N5"],["ひ","火","hi","fogo","fire","N5"],
+    ["やま","山","yama","montanha","mountain","N5"],["かわ","川","kawa","rio","river","N5"],
+    ["そら","空","sora","céu","sky","N5"],["あめ","雨","ame","chuva","rain","N5"],
+    ["いぬ","犬","inu","cachorro","dog","N5"],["ねこ","猫","neko","gato","cat","N5"],
+    ["さかな","魚","sakana","peixe","fish","N5"],["とり","鳥","tori","pássaro","bird","N5"],
+    ["たべもの","食べ物","tabemono","comida","food","N5"],["のみもの","飲み物","nomimono","bebida","drink","N5"],
+    ["ほん","本","hon","livro","book","N5"],["くるま","車","kuruma","carro","car","N5"],
+    ["でんしゃ","電車","densha","trem","train","N5"],["えき","駅","eki","estação","station","N5"],
+    ["かいしゃ","会社","kaisha","empresa","company","N5"],["しごと","仕事","shigoto","trabalho","job","N5"],
+    ["じかん","時間","jikan","tempo / hora","time","N5"],["てんき","天気","tenki","clima","weather","N5"],
+    ["げんき","元気","genki","saúde / disposição","energetic / well","N5"],["すき","好き","suki","gostar","to like","N5"],
+    ["きらい","嫌い","kirai","não gostar","to dislike","N5"],["おおきい","大きい","ookii","grande","big","N5"],
+    ["ちいさい","小さい","chiisai","pequeno","small","N5"],["あたらしい","新しい","atarashii","novo","new","N5"],
+    ["ふるい","古い","furui","antigo / velho","old","N5"],["たかい","高い","takai","caro / alto","expensive / tall","N5"],
+    ["やすい","安い","yasui","barato","cheap","N5"],["いそがしい","忙しい","isogashii","ocupado","busy","N5"],
+    ["たのしい","楽しい","tanoshii","divertido","fun","N5"],["むずかしい","難しい","muzukashii","difícil","difficult","N5"],
+    ["かんたん","簡単","kantan","fácil / simples","easy / simple","N5"],["まいにち","毎日","mainichi","todo dia","every day","N5"],
+    ["いっしょに","一緒に","issho ni","juntos","together","N5"],["すこし","少し","sukoshi","um pouco","a little","N5"],
+    ["たくさん","たくさん","takusan","muito / bastante","a lot","N5"],["ぜんぶ","全部","zenbu","tudo","everything","N5"],
+    ["たんじょうび","誕生日","tanjoubi","aniversário","birthday","N5"],["かいもの","買い物","kaimono","compras","shopping","N5"],
+
+    ["けいけん","経験","keiken","experiência","experience","N4"],["せつめい","説明","setsumei","explicação","explanation","N4"],
+    ["じゅんび","準備","junbi","preparação","preparation","N4"],["しんぱい","心配","shinpai","preocupação","worry","N4"],
+    ["きけん","危険","kiken","perigo","danger","N4"],["あんぜん","安全","anzen","segurança","safety","N4"],
+    ["しゅうかん","習慣","shuukan","hábito","habit","N4"],["けいざい","経済","keizai","economia","economy","N4"],
+    ["せいじ","政治","seiji","política","politics","N4"],["ぶんか","文化","bunka","cultura","culture","N4"],
+    ["れきし","歴史","rekishi","história","history","N4"],["ちず","地図","chizu","mapa","map","N4"],
+    ["りょこう","旅行","ryokou","viagem","travel","N4"],["しょうたい","招待","shoutai","convite","invitation","N4"],
+    ["やくそく","約束","yakusoku","promessa","promise","N4"],["そうだん","相談","soudan","consulta","consultation","N4"],
+    ["よてい","予定","yotei","plano","schedule","N4"],["もくてき","目的","mokuteki","objetivo","purpose","N4"],
+    ["りゆう","理由","riyuu","motivo","reason","N4"],["いけん","意見","iken","opinião","opinion","N4"],
+    ["しつもん","質問","shitsumon","pergunta","question","N4"],["へんじ","返事","henji","resposta","reply","N4"],
+    ["れんらく","連絡","renraku","contato","contact","N4"],["かいぎ","会議","kaigi","reunião","meeting","N4"],
+    ["しゅっちょう","出張","shucchou","viagem de trabalho","business trip","N4"],["ざんぎょう","残業","zangyou","hora extra","overtime","N4"],
+    ["きゅうりょう","給料","kyuuryou","salário","salary","N4"],["けいやく","契約","keiyaku","contrato","contract","N4"],
+    ["かんきょう","環境","kankyou","meio ambiente","environment","N4"],["しぜん","自然","shizen","natureza","nature","N4"],
+    ["たてもの","建物","tatemono","prédio","building","N4"],["へや","部屋","heya","quarto","room","N4"],
+    ["だいどころ","台所","daidokoro","cozinha","kitchen","N4"],["れいぞうこ","冷蔵庫","reizouko","geladeira","fridge","N4"],
+    ["ふとん","布団","futon","futon","futon (bedding)","N4"],["せんたく","洗濯","sentaku","lavagem de roupa","laundry","N4"],
+    ["そうじ","掃除","souji","limpeza","cleaning","N4"],["うんどう","運動","undou","exercício","exercise","N4"],
+    ["けんこう","健康","kenkou","saúde","health","N4"],["せいかく","性格","seikaku","personalidade","personality","N4"],
+
+    ["えいきょう","影響","eikyou","influência","influence","N3"],["じょうきょう","状況","joukyou","situação","situation","N3"],
+    ["ていあん","提案","teian","proposta","proposal","N3"],["はんだん","判断","handan","julgamento","judgment","N3"],
+    ["かいけつ","解決","kaiketsu","solução","solution","N3"],["まんぞく","満足","manzoku","satisfação","satisfaction","N3"],
+    ["どりょく","努力","doryoku","esforço","effort","N3"],["せいこう","成功","seikou","sucesso","success","N3"],
+    ["しっぱい","失敗","shippai","fracasso","failure","N3"],["せきにん","責任","sekinin","responsabilidade","responsibility","N3"],
+    ["ひょうげん","表現","hyougen","expressão","expression","N3"],["きおく","記憶","kioku","memória","memory","N3"],
+    ["そうぞう","想像","souzou","imaginação","imagination","N3"],["かんどう","感動","kandou","comoção","being moved","N3"],
+    ["きんちょう","緊張","kinchou","tensão / nervosismo","tension / nervousness","N3"],["がまん","我慢","gaman","aguentar / suportar","endurance","N3"],
+    ["えんりょ","遠慮","enryo","reserva / cerimônia","restraint","N3"],["めんどう","面倒","mendou","trabalhoso / incômodo","troublesome","N3"],
+    ["とくい","得意","tokui","ponto forte","one's forte","N3"],["にがて","苦手","nigate","ponto fraco","weak point","N3"],
+    ["ふつう","普通","futsuu","comum / normal","ordinary","N3"],["とくべつ","特別","tokubetsu","especial","special","N3"],
+    ["ひつよう","必要","hitsuyou","necessário","necessary","N3"],["じゅうぶん","十分","juubun","suficiente","enough","N3"],
+    ["てきとう","適当","tekitou","adequado","suitable","N3"],["かくにん","確認","kakunin","confirmação","confirmation","N3"],
+    ["はっぴょう","発表","happyou","apresentação / anúncio","announcement","N3"],["ほうこく","報告","houkoku","relatório","report","N3"],
+    ["れんぞく","連続","renzoku","sequência / consecutivo","consecutive","N3"],["とちゅう","途中","tochuu","no meio do caminho","on the way","N3"],
+    ["いぜん","以前","izen","antes / anteriormente","previously","N3"],["しょうらい","将来","shourai","futuro","future","N3"],
+    ["きたい","期待","kitai","expectativa","expectation","N3"],["いんしょう","印象","inshou","impressão","impression","N3"],
+    ["たいど","態度","taido","atitude","attitude","N3"],["もんく","文句","monku","reclamação","complaint","N3"],
+    ["じょうだん","冗談","joudan","piada","joke","N3"],["めいわく","迷惑","meiwaku","incômodo / transtorno","nuisance","N3"],
+    ["しんせつ","親切","shinsetsu","gentileza","kindness","N3"],["まじめ","真面目","majime","sério / aplicado","earnest","N3"],
+    ["ふくざつ","複雑","fukuzatsu","complexo","complicated","N3"],["たんじゅん","単純","tanjun","simples","simple","N3"],
+
+    ["けいこう","傾向","keikou","tendência","tendency","N2"],["げんしょう","現象","genshou","fenômeno","phenomenon","N2"],
+    ["ようそ","要素","youso","elemento / fator","element","N2"],["じょうけん","条件","jouken","condição","condition","N2"],
+    ["きじゅん","基準","kijun","critério / padrão","standard","N2"],["はんい","範囲","han'i","alcance / âmbito","range","N2"],
+    ["わりあい","割合","wariai","proporção","proportion","N2"],["へいきん","平均","heikin","média","average","N2"],
+    ["ぞうか","増加","zouka","aumento","increase","N2"],["さくげん","削減","sakugen","redução","reduction","N2"],
+    ["こうか","効果","kouka","efeito","effect","N2"],["こうりつ","効率","kouritsu","eficiência","efficiency","N2"],
+    ["しゅだん","手段","shudan","meio / método","means","N2"],["たいさく","対策","taisaku","medida / contramedida","countermeasure","N2"],
+    ["かだい","課題","kadai","tarefa / desafio","task / issue","N2"],["せいど","制度","seido","sistema institucional","institution","N2"],
+    ["せいさく","政策","seisaku","política pública","policy","N2"],["けんり","権利","kenri","direito","right","N2"],
+    ["ぎむ","義務","gimu","dever / obrigação","duty","N2"],["しょうにん","承認","shounin","aprovação","approval","N2"],
+    ["いらい","依頼","irai","solicitação","request","N2"],["ていしゅつ","提出","teishutsu","entrega / submissão","submission","N2"],
+    ["けんとう","検討","kentou","exame / consideração","review","N2"],["はあく","把握","haaku","compreensão / domínio","grasp","N2"],
+    ["にんしき","認識","ninshiki","reconhecimento","recognition","N2"],["いしき","意識","ishiki","consciência","consciousness","N2"],
+    ["むじゅん","矛盾","mujun","contradição","contradiction","N2"],["へんけん","偏見","henken","preconceito","prejudice","N2"],
+    ["ごかい","誤解","gokai","mal-entendido","misunderstanding","N2"],["ぐうぜん","偶然","guuzen","coincidência","coincidence","N2"],
+    ["じょじょに","徐々に","jojoni","gradualmente","gradually","N2"],["そうとう","相当","soutou","considerável","considerable","N2"],
+    ["あっとうてき","圧倒的","attouteki","esmagador","overwhelming","N2"],["せっきょくてき","積極的","sekkyokuteki","proativo","proactive","N2"],
+    ["しょうきょくてき","消極的","shoukyokuteki","passivo","passive","N2"],["ぐたいてき","具体的","gutaiteki","concreto","concrete","N2"],
+    ["ちゅうしょうてき","抽象的","chuushouteki","abstrato","abstract","N2"],["かいぜん","改善","kaizen","melhoria","improvement","N2"]
   ];
 
+  // kanji: [caractere, leitura em romaji, pt, en, nível JLPT]
   var KANJI_RAW = [
-    ["一","ichi","um (1)","one (1)"],["二","ni","dois (2)","two (2)"],["三","san","três (3)","three (3)"],
-    ["四","yon","quatro (4)","four (4)"],["五","go","cinco (5)","five (5)"],["六","roku","seis (6)","six (6)"],
-    ["七","nana","sete (7)","seven (7)"],["八","hachi","oito (8)","eight (8)"],["九","kyuu","nove (9)","nine (9)"],
-    ["十","juu","dez (10)","ten (10)"],["人","hito","pessoa","person"],["日","hi","dia / sol","day / sun"],
-    ["月","tsuki","mês / lua","month / moon"],["火","ka","fogo","fire"],["水","sui","água","water"],
-    ["木","moku","árvore","tree"],["金","kin","ouro / dinheiro","gold / money"],["土","do","terra","earth / soil"],
-    ["年","toshi","ano","year"],["上","ue","em cima","up / above"],["下","shita","embaixo","down / below"],
-    ["中","naka","dentro / meio","inside / middle"],["大","dai","grande","big"],["小","shou","pequeno","small"],
-    ["山","san","montanha","mountain"],["川","sen","rio","river"],["田","ta","arrozal / campo","rice field"],
-    ["女","onna","mulher","woman"],["男","otoko","homem","man"],["子","ko","criança","child"],
-    ["目","me","olho","eye"],["耳","mimi","orelha","ear"],["口","kuchi","boca","mouth"],
-    ["手","te","mão","hand"],["足","ashi","pé / perna","foot / leg"],["力","chikara","força","strength"],
-    ["心","kokoro","coração","heart"],["学","gaku","estudo / aprendizado","study / learning"],["校","kou","escola","school"],
-    ["生","sei","vida / nascer","life / birth"],["先","sen","antes / à frente","before / ahead"],["名","na","nome","name"],
-    ["国","kuni","país","country"],["語","go","língua / idioma","language"],["話","hanashi","falar / história","talk / story"],
-    ["電","den","eletricidade","electricity"],["気","ki","espírito / energia","spirit / energy"],["天","ten","céu","sky / heaven"],
-    ["雨","ame","chuva","rain"],["文","bun","texto / frase","text / sentence"],
-    ["動","dou","mover","move"],["使","shi","usar","use"],
-    ["働","dou","trabalhar","work"],["悪","waru","mau","bad"],
-    ["深","shin","profundo","deep"],["浅","asa","raso","shallow"],
-    ["太","futo","grosso","thick"],["細","hoso","fino","thin"],
-    ["重","juu","pesado","heavy"],["軽","kei","leve","light (weight)"],
-    ["速","haya","rápido","fast"],["遅","oso","lento","slow"],
-    ["強","kyou","forte","strong"],["弱","jaku","fraco","weak"],
-    ["遠","en","longe","far"],["近","kin","perto","near"],
-    ["昼","hiru","meio-dia","noon"],["夜","yoru","noite","night"],
-    ["朝","asa","manhã","morning"],["週","shuu","semana","week"],
-    ["曜","you","dia da semana","weekday"],["世","se","mundo","world"],
-    ["界","kai","fronteira / mundo","world / boundary"],["地","chi","terra","earth"],
-    ["図","zu","diagrama","diagram"],["会","kai","encontro","meeting"],
-    ["社","sha","empresa","company"],["業","gyou","negócio / indústria","business / industry"],
-    ["員","in","membro","member"],["発","hatsu","partir / emitir","departure / emit"],
-    ["着","chaku","chegar / vestir","arrive / wear"],["送","sou","enviar","send"],
-    ["受","ju","receber","receive"],["品","hin","produto","product / item"],
-    ["事","ji","assunto / coisa","matter / thing"]
+    ["一","ichi","um (1)","one (1)","N5"],["二","ni","dois (2)","two (2)","N5"],["三","san","três (3)","three (3)","N5"],
+    ["四","yon","quatro (4)","four (4)","N5"],["五","go","cinco (5)","five (5)","N5"],["六","roku","seis (6)","six (6)","N5"],
+    ["七","nana","sete (7)","seven (7)","N5"],["八","hachi","oito (8)","eight (8)","N5"],["九","kyuu","nove (9)","nine (9)","N5"],
+    ["十","juu","dez (10)","ten (10)","N5"],["人","hito","pessoa","person","N5"],["日","hi","dia / sol","day / sun","N5"],
+    ["月","tsuki","mês / lua","month / moon","N5"],["火","ka","fogo","fire","N5"],["水","sui","água","water","N5"],
+    ["木","moku","árvore","tree","N5"],["金","kin","ouro / dinheiro","gold / money","N5"],["土","do","terra","earth / soil","N5"],
+    ["年","toshi","ano","year","N5"],["上","ue","em cima","up / above","N5"],["下","shita","embaixo","down / below","N5"],
+    ["中","naka","dentro / meio","inside / middle","N5"],["大","dai","grande","big","N5"],["小","shou","pequeno","small","N5"],
+    ["山","san","montanha","mountain","N5"],["川","sen","rio","river","N5"],["田","ta","arrozal / campo","rice field","N5"],
+    ["女","onna","mulher","woman","N5"],["男","otoko","homem","man","N5"],["子","ko","criança","child","N5"],
+    ["目","me","olho","eye","N5"],["耳","mimi","orelha","ear","N5"],["口","kuchi","boca","mouth","N5"],
+    ["手","te","mão","hand","N5"],["足","ashi","pé / perna","foot / leg","N5"],["力","chikara","força","strength","N5"],
+    ["心","kokoro","coração","heart","N5"],["学","gaku","estudo / aprendizado","study","N5"],["校","kou","escola","school","N5"],
+    ["生","sei","vida / nascer","life / birth","N5"],["先","sen","antes / à frente","before / ahead","N5"],["名","na","nome","name","N5"],
+    ["国","kuni","país","country","N5"],["語","go","língua / idioma","language","N5"],["話","hanashi","falar / história","talk / story","N5"],
+    ["電","den","eletricidade","electricity","N5"],["気","ki","espírito / energia","spirit / energy","N5"],["天","ten","céu","sky / heaven","N5"],
+    ["雨","ame","chuva","rain","N5"],["文","bun","texto / frase","text / sentence","N5"],
+
+    ["動","dou","mover","move","N4"],["使","shi","usar","use","N4"],["働","dou","trabalhar","work","N4"],
+    ["悪","waru","mau","bad","N4"],["深","shin","profundo","deep","N4"],["浅","asa","raso","shallow","N4"],
+    ["太","futo","grosso","thick","N4"],["細","hoso","fino","thin","N4"],["重","juu","pesado","heavy","N4"],
+    ["軽","kei","leve","light (weight)","N4"],["速","haya","rápido","fast","N4"],["遅","oso","lento","slow","N4"],
+    ["強","kyou","forte","strong","N4"],["弱","jaku","fraco","weak","N4"],["遠","en","longe","far","N4"],
+    ["近","kin","perto","near","N4"],["昼","hiru","meio-dia","noon","N4"],["夜","yoru","noite","night","N4"],
+    ["朝","asa","manhã","morning","N4"],["週","shuu","semana","week","N4"],["曜","you","dia da semana","weekday","N4"],
+    ["世","se","mundo","world","N4"],["界","kai","fronteira / mundo","world / boundary","N4"],["地","chi","terra","earth","N4"],
+    ["図","zu","diagrama","diagram","N4"],["会","kai","encontro","meeting","N4"],["社","sha","empresa","company","N4"],
+    ["業","gyou","negócio / indústria","business","N4"],["員","in","membro","member","N4"],["発","hatsu","partir / emitir","departure","N4"],
+    ["着","chaku","chegar / vestir","arrive / wear","N4"],["送","sou","enviar","send","N4"],["受","ju","receber","receive","N4"],
+    ["品","hin","produto","product","N4"],["事","ji","assunto / coisa","matter / thing","N4"],
+
+    ["政","sei","política","politics","N3"],["議","gi","deliberação / discussão","deliberation","N3"],
+    ["民","min","povo","people","N3"],["連","ren","ligar / associar","connect","N3"],
+    ["対","tai","contra / oposto","against / pair","N3"],["部","bu","parte / departamento","part / department","N3"],
+    ["合","gou","juntar / combinar","join / fit","N3"],["市","shi","cidade","city","N3"],
+    ["内","nai","dentro","inside","N3"],["相","sou","mútuo","mutual","N3"],
+    ["定","tei","determinar / fixar","decide / fix","N3"],["回","kai","vez / girar","time / rotate","N3"],
+    ["化","ka","mudança / transformação","change","N3"],["選","sen","escolher","choose","N3"],
+    ["現","gen","aparecer / atual","appear / present","N3"],["決","ketsu","decidir","decide","N3"],
+    ["全","zen","todo / inteiro","whole","N3"],["表","hyou","superfície / expressar","surface / express","N3"],
+    ["戦","sen","guerra / lutar","war / fight","N3"],["経","kei","passar / gerir","pass through / manage","N3"],
+    ["通","tsuu","passar / comunicar","pass / commute","N3"],["要","you","necessário / essencial","necessary","N3"],
+    ["制","sei","sistema / controlar","system / control","N3"],["治","ji","governar / curar","govern / cure","N3"],
+    ["法","hou","lei","law","N3"],["情","jou","sentimento / emoção","feeling","N3"],
+    ["結","ketsu","atar / resultado","tie / result","N3"],["果","ka","fruto / resultado","fruit / result","N3"],
+    ["続","zoku","continuar","continue","N3"],["進","shin","avançar","advance","N3"],
+    ["感","kan","sentir / sensação","feel","N3"],["覚","kaku","lembrar / perceber","remember / sense","N3"],
+    ["供","kyou","oferecer / acompanhar","offer","N3"],["取","shu","pegar / tomar","take","N3"],
+    ["参","san","participar","participate","N3"],["師","shi","mestre / professor","master / teacher","N3"],
+    ["個","ko","individual / unidade","individual","N3"],["形","kei","forma","shape","N3"],
+    ["存","son","existir","exist","N3"],["在","zai","estar / existir","be located","N3"],
+    ["置","chi","colocar","place / put","N3"],
+
+    ["済","sai","terminar / resolver","finish / settle","N2"],["勝","shou","vencer","win","N2"],
+    ["負","fu","perder / carregar","lose / bear","N2"],["犯","han","crime / violar","crime / violate","N2"],
+    ["罪","zai","culpa / crime","guilt / crime","N2"],["罰","batsu","punição","punishment","N2"],
+    ["認","nin","reconhecer","recognize","N2"],["論","ron","teoria / argumento","theory / argument","N2"],
+    ["評","hyou","avaliar / criticar","evaluate","N2"],["判","han","julgar","judge","N2"],
+    ["断","dan","cortar / decidir","cut off / decide","N2"],["象","shou","fenômeno / elefante","phenomenon / elephant","N2"],
+    ["徴","chou","sinal / característica","sign / feature","N2"],["傾","kei","inclinar","lean / incline","N2"],
+    ["比","hi","comparar / razão","compare / ratio","N2"],["均","kin","equilíbrio / média","balance / average","N2"],
+    ["費","hi","gasto / despesa","expense","N2"],["貸","tai","emprestar","lend","N2"],
+    ["借","shaku","tomar emprestado","borrow","N2"],["貯","cho","poupar","save up","N2"],
+    ["富","fu","riqueza","wealth","N2"],["貧","hin","pobreza","poverty","N2"],
+    ["域","iki","área / região","area","N2"],["境","kyou","fronteira / limite","boundary","N2"],
+    ["展","ten","expandir / exibir","expand / exhibit","N2"],["傷","shou","ferida","wound","N2"],
+    ["精","sei","refinado / espírito","refined / spirit","N2"],["神","shin","deus / divindade","god","N2"],
+    ["秘","hi","segredo","secret","N2"],["密","mitsu","denso / secreto","dense / secret","N2"],
+    ["端","tan","ponta / extremidade","edge / end","N2"],["総","sou","total / geral","total / general","N2"],
+    ["統","tou","unificar / governar","unify","N2"],["権","ken","direito / autoridade","right / authority","N2"],
+    ["義","gi","justiça / significado","justice / meaning","N2"],["恐","kyou","medo","fear","N2"],
+    ["及","kyuu","alcançar","reach","N2"],["複","fuku","duplo / complexo","double / complex","N2"]
   ];
 
-  function toEntries(raw){
-    return raw.map(function(a){ return { jp:a[0], reading:a[1], meaning:{ pt:a[2], en:a[3] } }; });
-  }
-  var VOCAB = toEntries(VOCAB_RAW);
-  var KANJI = toEntries(KANJI_RAW);
+  var VOCAB = VOCAB_RAW.map(function(a){
+    return { kana:a[0], kanji:a[1], reading:a[2], meaning:{ pt:a[3], en:a[4] }, jlpt:a[5] };
+  });
+  var KANJI = KANJI_RAW.map(function(a){
+    return { kana:a[0], kanji:a[0], reading:a[1], meaning:{ pt:a[2], en:a[3] }, jlpt:a[4] };
+  });
 
   var GAMES = {
-    vocab: { list:VOCAB, showReading:true },
-    kanji: { list:KANJI, showReading:false }
+    vocab: { all:VOCAB, showReading:true },
+    kanji: { all:KANJI, showReading:false }
   };
   var GAME_ORDER = ["vocab","kanji"];
+
+  var LEVELS = {
+    easy:   { jlpt:["N5","N4"], label:"N5–N4" },
+    medium: { jlpt:["N4","N3"], label:"N4–N3" },
+    hard:   { jlpt:["N3","N2"], label:"N3–N2" }
+  };
+  var LEVEL_ORDER = ["easy","medium","hard"];
+
+  var listCache = {};
+  function listFor(game, level){
+    var key = game + ":" + level;
+    if (!listCache[key]){
+      var allowed = LEVELS[level].jlpt;
+      listCache[key] = GAMES[game].all.filter(function(item){
+        return allowed.indexOf(item.jlpt) !== -1;
+      });
+    }
+    return listCache[key];
+  }
+
+  // no nível fácil o vocabulário aparece em kana; nos demais, em kanji
+  function promptText(game, level, item){
+    return (game === "vocab" && level === "easy") ? item.kana : item.kanji;
+  }
 
   // ---------- deterministic daily picks ----------
   function xmur3(str){
@@ -790,10 +900,10 @@
   }
   var QUESTIONS_PER_DAY = 7;
 
-  function pickDaily(game, dateKey){
-    var seedGen = xmur3(dateKey+"::"+game);
+  function pickDaily(game, level, dateKey){
+    var seedGen = xmur3(dateKey+"::"+game+"::"+level);
     var rand = mulberry32(seedGen());
-    var list = GAMES[game].list;
+    var list = listFor(game, level);
     var all = list.map(function(_,i){ return i; });
     var chosen = shuffle(all, rand).slice(0, QUESTIONS_PER_DAY);
     return chosen.map(function(idx){
@@ -819,19 +929,23 @@
   }
 
   // ---------- persisted per-game state ----------
-  function loadState(game){
+  // o nível fácil mantém a chave antiga, para não zerar as sequências de quem já jogava
+  function stateKey(game, level){
+    return level === "easy" ? ("jck_" + game) : ("jck_" + level + "_" + game);
+  }
+  function loadState(game, level){
     try{
-      var raw = localStorage.getItem("jck_"+game);
+      var raw = localStorage.getItem(stateKey(game, level));
       if (raw) return JSON.parse(raw);
     }catch(e){}
     return { lastDateKey:null, lastScore:0, lastGrid:[], streak:0, longest:0 };
   }
-  function saveState(game, st){
-    try{ localStorage.setItem("jck_"+game, JSON.stringify(st)); }catch(e){}
+  function saveState(game, level, st){
+    try{ localStorage.setItem(stateKey(game, level), JSON.stringify(st)); }catch(e){}
   }
 
   // ---------- app state (survives republish via hot snapshot) ----------
-  var app = { activeGame:null, questions:null, qIndex:0, grid:[], answered:false, lang:loadLang() };
+  var app = { activeGame:null, questions:null, qIndex:0, grid:[], answered:false, lang:loadLang(), level:loadLevel() };
 
   var homeEl = document.getElementById("home");
   var panelEl = document.getElementById("panel");
@@ -855,24 +969,33 @@
     document.querySelector(".wordmark").textContent = s.wordmark;
     document.getElementById("footerText").innerHTML = s.footer;
     document.querySelectorAll(".adslot span:first-child").forEach(function(el){ el.textContent = s.adLabel; });
-    daynumEl.textContent = "#" + dayNumber(todayKey());
+    daynumEl.innerHTML = '#' + dayNumber(todayKey())
+      + ' <span class="jlpt-tag">' + LEVELS[app.level].label + '</span>';
     langToggle.innerHTML = (app.lang === "pt" ? "🇧🇷 pt-br" : "🇺🇸 en-us") + ' <span class="chev">▾</span>';
     document.querySelectorAll("[data-tiktok-link]").forEach(function(el){ el.href = TIKTOK_URL; });
 
-    difftabsEl.innerHTML = ""
-      + '<button class="difftab active">' + s.diffEasy + '</button>'
-      + '<button class="difftab soon">' + s.diffMed + '<span class="tab-tooltip">' + s.soon + '</span></button>'
-      + '<button class="difftab soon">' + s.diffHard + '<span class="tab-tooltip">' + s.soon + '</span></button>';
+    var labelKeys = { easy:"diffEasy", medium:"diffMed", hard:"diffHard" };
+    difftabsEl.innerHTML = LEVEL_ORDER.map(function(lv){
+      return '<button class="difftab' + (lv === app.level ? " active" : "") + '" data-level="' + lv + '">'
+        + s[labelKeys[lv]] + '</button>';
+    }).join("");
 
-    difftabsEl.querySelectorAll(".difftab.soon").forEach(function(btn){
-      btn.addEventListener("click", function(){
-        var tip = btn.querySelector(".tab-tooltip");
-        if (!tip) return;
-        tip.classList.add("show");
-        clearTimeout(tip._hideTimer);
-        tip._hideTimer = setTimeout(function(){ tip.classList.remove("show"); }, 1500);
-      });
+    difftabsEl.querySelectorAll("[data-level]").forEach(function(btn){
+      btn.addEventListener("click", function(){ setLevel(btn.getAttribute("data-level")); });
     });
+  }
+
+  function setLevel(level){
+    if (level === app.level || !LEVELS[level]) return;
+    app.level = level;
+    saveLevel(level);
+    app.activeGame = null;
+    app.questions = null;
+    app.qIndex = 0;
+    app.grid = [];
+    app.answered = false;
+    hideToast();
+    render();
   }
 
   function mascotImg(fxText){
@@ -887,7 +1010,7 @@
     var key = todayKey();
 
     var actions = GAME_ORDER.map(function(game){
-      var st = loadState(game);
+      var st = loadState(game, app.level);
       var playedToday = st.lastDateKey === key;
       var label = playedToday ? s.playAgain : (game==="vocab" ? s.playVocab : s.playKanji);
       var html = '<div class="game-action-group">'
@@ -931,7 +1054,7 @@
   }
 
   function copyResult(game){
-    var st = loadState(game);
+    var st = loadState(game, app.level);
     var key = todayKey();
     var s = S();
     var label = game === "vocab" ? s.vocabEyebrow : s.kanjiEyebrow;
@@ -945,7 +1068,7 @@
   function startGame(game){
     var key = todayKey();
     app.activeGame = game;
-    app.questions = pickDaily(game, key);
+    app.questions = pickDaily(game, app.level, key);
     app.qIndex = 0;
     app.grid = [];
     app.answered = false;
@@ -965,7 +1088,7 @@
     var s = S();
     var game = app.activeGame;
     var conf = GAMES[game];
-    var list = conf.list;
+    var list = listFor(game, app.level);
     var q = app.questions[app.qIndex];
     var item = list[q.idx];
     panelEl.setAttribute("data-game", game);
@@ -984,7 +1107,7 @@
       + '</div>'
       + '<div class="dots">' + dots + '</div>'
       + '<div class="prompt">'
-      + '<span class="jp-char">' + item.jp + '</span>'
+      + '<span class="jp-char">' + promptText(game, app.level, item) + '</span>'
       + (conf.showReading ? '<span class="reading">' + item.reading + '</span>' : '')
       + '<span class="ask">' + s.ask + '</span>'
       + '</div>'
@@ -1017,7 +1140,7 @@
     var game = app.activeGame;
     var conf = GAMES[game];
     var q = app.questions[app.qIndex];
-    var item = conf.list[q.idx];
+    var item = listFor(game, app.level)[q.idx];
     var ok = i === q.correctIndex;
     app.grid.push(ok);
 
@@ -1080,14 +1203,14 @@
     var game = app.activeGame;
     var key = todayKey();
     var score = app.grid.filter(Boolean).length;
-    var st = loadState(game);
+    var st = loadState(game, app.level);
 
     var newStreak;
     if (st.lastDateKey === key) newStreak = st.streak;
     else if (st.lastDateKey === yesterdayKey(key)) newStreak = st.streak + 1;
     else newStreak = 1;
 
-    saveState(game, {
+    saveState(game, app.level, {
       lastDateKey:key, lastScore:score, lastGrid:app.grid,
       streak:newStreak, longest:Math.max(newStreak, st.longest||0)
     });
@@ -1116,6 +1239,7 @@
   }
 
   function render(){
+    if (!LEVELS[app.level]) app.level = "easy";
     renderChrome();
     if (app.activeGame && Array.isArray(app.questions) && app.questions.length){
       homeEl.hidden = true;
