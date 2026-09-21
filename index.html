@@ -44,6 +44,21 @@
     --focus:#FFD54A;
     --radius-block:14px;
     --radius-pill:999px;
+    --btn-bg:var(--ink);
+    --btn-hover:var(--primary);
+  }
+  /* cada nível tem seu próprio clima: grade de fundo e botões */
+  :root[data-level="medium"]{
+    --bg:#0E0B07;
+    --bg-grid:rgba(255,151,54,.13);
+    --btn-bg:#FF9736;
+    --btn-hover:#FFD3A1;
+  }
+  :root[data-level="hard"]{
+    --bg:#0E0808;
+    --bg-grid:rgba(240,68,56,.14);
+    --btn-bg:#F04438;
+    --btn-hover:#FFAFA8;
   }
   *{ box-sizing:border-box; }
   body{
@@ -233,7 +248,7 @@
 
   .btn-white{
     position:relative;
-    background:var(--ink);
+    background:var(--btn-bg);
     color:#1C1B1F;
     overflow:hidden;
     z-index:0;
@@ -243,7 +258,7 @@
     content:"";
     position:absolute;
     inset:0;
-    background:var(--primary);
+    background:var(--btn-hover);
     transform:scaleX(0);
     transform-origin:left;
     transition:transform .6s cubic-bezier(.22,1,.36,1);
@@ -618,8 +633,9 @@
       toastCopied:"Resultado copiado!",
       toastHint:"Cola nos comentários do TikTok e marca o Kaa",
       toastCta:"Abrir TikTok",
-      shareText:function(label, day, score, total, grid){
-        return "🐦‍⬛ " + this.mascotFx + "  Fiz o desafio de " + label.toLowerCase() + " #" + day + " do Japonês com Kaa\n"
+      shareText:function(label, levelName, day, score, total, grid){
+        return "🐦‍⬛ " + this.mascotFx + "  Fiz o desafio de " + label.toLowerCase()
+          + ", nível " + levelName.toLowerCase() + ", #" + day + " do Japonês com Kaa\n"
           + score + "/" + total + " — " + grid;
       },
       footer:'Flashcards diários por <span class="brand-name">Japonês com Kaa</span>'
@@ -638,8 +654,9 @@
       toastCopied:"Result copied!",
       toastHint:"Paste it in the TikTok comments and tag Kaa",
       toastCta:"Open TikTok",
-      shareText:function(label, day, score, total, grid){
-        return "🐦‍⬛ " + this.mascotFx + "  I did today's " + label.toLowerCase() + " challenge #" + day + " from Japonês com Kaa\n"
+      shareText:function(label, levelName, day, score, total, grid){
+        return "🐦‍⬛ " + this.mascotFx + "  I did today's " + label.toLowerCase()
+          + " challenge, " + levelName.toLowerCase() + " level, #" + day + " from Japonês com Kaa\n"
           + score + "/" + total + " — " + grid;
       },
       footer:'Daily flashcards by <span class="brand-name">Japonês com Kaa</span>'
@@ -713,28 +730,62 @@
     ["そうじ","掃除","souji","limpeza","cleaning","N4"],["うんどう","運動","undou","exercício","exercise","N4"],
     ["けんこう","健康","kenkou","saúde","health","N4"],["せいかく","性格","seikaku","personalidade","personality","N4"],
 
-    ["えいきょう","影響","eikyou","influência","influence","N3"],["じょうきょう","状況","joukyou","situação","situation","N3"],
-    ["ていあん","提案","teian","proposta","proposal","N3"],["はんだん","判断","handan","julgamento","judgment","N3"],
-    ["かいけつ","解決","kaiketsu","solução","solution","N3"],["まんぞく","満足","manzoku","satisfação","satisfaction","N3"],
-    ["どりょく","努力","doryoku","esforço","effort","N3"],["せいこう","成功","seikou","sucesso","success","N3"],
-    ["しっぱい","失敗","shippai","fracasso","failure","N3"],["せきにん","責任","sekinin","responsabilidade","responsibility","N3"],
-    ["ひょうげん","表現","hyougen","expressão","expression","N3"],["きおく","記憶","kioku","memória","memory","N3"],
-    ["そうぞう","想像","souzou","imaginação","imagination","N3"],["かんどう","感動","kandou","comoção","being moved","N3"],
-    ["きんちょう","緊張","kinchou","tensão / nervosismo","tension / nervousness","N3"],["がまん","我慢","gaman","aguentar / suportar","endurance","N3"],
-    ["えんりょ","遠慮","enryo","reserva / cerimônia","restraint","N3"],["めんどう","面倒","mendou","trabalhoso / incômodo","troublesome","N3"],
-    ["とくい","得意","tokui","ponto forte","one's forte","N3"],["にがて","苦手","nigate","ponto fraco","weak point","N3"],
-    ["ふつう","普通","futsuu","comum / normal","ordinary","N3"],["とくべつ","特別","tokubetsu","especial","special","N3"],
+    ["さいふ","財布","saifu","carteira","wallet","N3"],["めがね","眼鏡","megane","óculos","glasses","N3"],
+    ["かぎ","鍵","kagi","chave","key","N3"],["かさ","傘","kasa","guarda-chuva","umbrella","N3"],
+    ["くつした","靴下","kutsushita","meia","socks","N3"],["ようふく","洋服","youfuku","roupa","clothes","N3"],
+    ["かみ","髪","kami","cabelo","hair","N3"],["かお","顔","kao","rosto","face","N3"],
+    ["ゆび","指","yubi","dedo","finger","N3"],["うで","腕","ude","braço","arm","N3"],
+    ["せなか","背中","senaka","costas","back (body)","N3"],["となり","隣","tonari","ao lado / vizinho","next door","N3"],
+    ["しんごう","信号","shingou","semáforo","traffic light","N3"],["かいだん","階段","kaidan","escada","stairs","N3"],
+    ["ひきだし","引き出し","hikidashi","gaveta","drawer","N3"],["たな","棚","tana","prateleira","shelf","N3"],
+    ["まくら","枕","makura","travesseiro","pillow","N3"],["もうふ","毛布","moufu","cobertor","blanket","N3"],
+    ["せっけん","石鹸","sekken","sabonete","soap","N3"],["ふろ","風呂","furo","banho / banheira","bath","N3"],
+    ["べんとう","弁当","bentou","marmita","boxed lunch","N3"],["あじ","味","aji","sabor","taste","N3"],
+    ["におい","匂い","nioi","cheiro","smell","N3"],["あまい","甘い","amai","doce","sweet","N3"],
+    ["からい","辛い","karai","picante","spicy","N3"],["にがい","苦い","nigai","amargo","bitter","N3"],
+    ["つめたい","冷たい","tsumetai","gelado","cold (to touch)","N3"],["ねむい","眠い","nemui","sonolento","sleepy","N3"],
+    ["つかれる","疲れる","tsukareru","cansar","to get tired","N3"],["いそぐ","急ぐ","isogu","apressar-se","to hurry","N3"],
+    ["おくれる","遅れる","okureru","atrasar-se","to be late","N3"],["まにあう","間に合う","maniau","chegar a tempo","to make it in time","N3"],
+    ["さがす","探す","sagasu","procurar","to look for","N3"],["みつける","見つける","mitsukeru","encontrar","to find","N3"],
+    ["わすれる","忘れる","wasureru","esquecer","to forget","N3"],["おぼえる","覚える","oboeru","memorizar","to memorize","N3"],
+    ["きめる","決める","kimeru","decidir","to decide","N3"],["えらぶ","選ぶ","erabu","escolher","to choose","N3"],
+    ["てつだう","手伝う","tetsudau","ajudar","to help","N3"],["かりる","借りる","kariru","pegar emprestado","to borrow","N3"],
+    ["はらう","払う","harau","pagar","to pay","N3"],["とどく","届く","todoku","chegar (encomenda)","to arrive (delivery)","N3"],
+    ["ならぶ","並ぶ","narabu","fazer fila","to line up","N3"],["こむ","混む","komu","lotar / ficar cheio","to get crowded","N3"],
+    ["かたづける","片付ける","katazukeru","arrumar","to tidy up","N3"],["こわれる","壊れる","kowareru","quebrar","to break","N3"],
+    ["なおす","直す","naosu","consertar","to fix","N3"],["たりる","足りる","tariru","ser suficiente","to be enough","N3"],
+    ["ねだん","値段","nedan","preço","price","N3"],["わりびき","割引","waribiki","desconto","discount","N3"],
+    ["むりょう","無料","muryou","grátis","free of charge","N3"],["つごう","都合","tsugou","disponibilidade","convenience","N3"],
+    ["ぐあい","具合","guai","estado de saúde","condition","N3"],["かぜ","風邪","kaze","resfriado","cold (illness)","N3"],
+    ["ねつ","熱","netsu","febre","fever","N3"],["くすり","薬","kusuri","remédio","medicine","N3"],
+    ["けが","怪我","kega","ferimento","injury","N3"],["よやく","予約","yoyaku","reserva","reservation","N3"],
+    ["さいご","最後","saigo","último / fim","last / end","N3"],["さいしょ","最初","saisho","primeiro / início","first","N3"],
+    ["だいたい","大体","daitai","aproximadamente","roughly","N3"],["かならず","必ず","kanarazu","com certeza","without fail","N3"],
+    ["ぜったい","絶対","zettai","absolutamente","absolutely","N3"],["たぶん","多分","tabun","talvez","maybe","N3"],
+    ["じつは","実は","jitsuwa","na verdade","actually","N3"],["たのしみ","楽しみ","tanoshimi","expectativa boa","something to look forward to","N3"],
+    ["しっぱい","失敗","shippai","fracasso","failure","N3"],["せいこう","成功","seikou","sucesso","success","N3"],
+    ["がまん","我慢","gaman","aguentar / suportar","endurance","N3"],["とくい","得意","tokui","ponto forte","one's forte","N3"],
+    ["にがて","苦手","nigate","ponto fraco","weak point","N3"],["めんどう","面倒","mendou","trabalhoso / incômodo","troublesome","N3"],
+    ["めいわく","迷惑","meiwaku","incômodo / transtorno","nuisance","N3"],["しんせつ","親切","shinsetsu","gentileza","kindness","N3"],
+    ["じょうだん","冗談","joudan","piada","joke","N3"],["もんく","文句","monku","reclamação","complaint","N3"],
     ["ひつよう","必要","hitsuyou","necessário","necessary","N3"],["じゅうぶん","十分","juubun","suficiente","enough","N3"],
-    ["てきとう","適当","tekitou","adequado","suitable","N3"],["かくにん","確認","kakunin","confirmação","confirmation","N3"],
-    ["はっぴょう","発表","happyou","apresentação / anúncio","announcement","N3"],["ほうこく","報告","houkoku","relatório","report","N3"],
-    ["れんぞく","連続","renzoku","sequência / consecutivo","consecutive","N3"],["とちゅう","途中","tochuu","no meio do caminho","on the way","N3"],
-    ["いぜん","以前","izen","antes / anteriormente","previously","N3"],["しょうらい","将来","shourai","futuro","future","N3"],
-    ["きたい","期待","kitai","expectativa","expectation","N3"],["いんしょう","印象","inshou","impressão","impression","N3"],
-    ["たいど","態度","taido","atitude","attitude","N3"],["もんく","文句","monku","reclamação","complaint","N3"],
-    ["じょうだん","冗談","joudan","piada","joke","N3"],["めいわく","迷惑","meiwaku","incômodo / transtorno","nuisance","N3"],
-    ["しんせつ","親切","shinsetsu","gentileza","kindness","N3"],["まじめ","真面目","majime","sério / aplicado","earnest","N3"],
-    ["ふくざつ","複雑","fukuzatsu","complexo","complicated","N3"],["たんじゅん","単純","tanjun","simples","simple","N3"],
+    ["ふつう","普通","futsuu","comum / normal","ordinary","N3"],["とくべつ","特別","tokubetsu","especial","special","N3"],
+    ["さいきん","最近","saikin","recentemente","recently","N3"],["とちゅう","途中","tochuu","no meio do caminho","on the way","N3"],
+    ["まじめ","真面目","majime","sério / aplicado","earnest","N3"],["えんりょ","遠慮","enryo","reserva / cerimônia","restraint","N3"],
+    ["きんちょう","緊張","kinchou","tensão / nervosismo","nervousness","N3"],
 
+    ["えいきょう","影響","eikyou","influência","influence","N2"],["じょうきょう","状況","joukyou","situação","situation","N2"],
+    ["ていあん","提案","teian","proposta","proposal","N2"],["はんだん","判断","handan","julgamento","judgment","N2"],
+    ["かいけつ","解決","kaiketsu","solução","solution","N2"],["まんぞく","満足","manzoku","satisfação","satisfaction","N2"],
+    ["どりょく","努力","doryoku","esforço","effort","N2"],["せきにん","責任","sekinin","responsabilidade","responsibility","N2"],
+    ["ひょうげん","表現","hyougen","expressão","expression","N2"],["きおく","記憶","kioku","memória","memory","N2"],
+    ["そうぞう","想像","souzou","imaginação","imagination","N2"],["かんどう","感動","kandou","comoção","being moved","N2"],
+    ["かくにん","確認","kakunin","confirmação","confirmation","N2"],["はっぴょう","発表","happyou","apresentação / anúncio","announcement","N2"],
+    ["ほうこく","報告","houkoku","relatório","report","N2"],["れんぞく","連続","renzoku","sequência / consecutivo","consecutive","N2"],
+    ["いぜん","以前","izen","antes / anteriormente","previously","N2"],["しょうらい","将来","shourai","futuro","future","N2"],
+    ["きたい","期待","kitai","expectativa","expectation","N2"],["いんしょう","印象","inshou","impressão","impression","N2"],
+    ["たいど","態度","taido","atitude","attitude","N2"],["てきとう","適当","tekitou","adequado","suitable","N2"],
+    ["ふくざつ","複雑","fukuzatsu","complexo","complicated","N2"],["たんじゅん","単純","tanjun","simples","simple","N2"],
     ["けいこう","傾向","keikou","tendência","tendency","N2"],["げんしょう","現象","genshou","fenômeno","phenomenon","N2"],
     ["ようそ","要素","youso","elemento / fator","element","N2"],["じょうけん","条件","jouken","condição","condition","N2"],
     ["きじゅん","基準","kijun","critério / padrão","standard","N2"],["はんい","範囲","han'i","alcance / âmbito","range","N2"],
@@ -974,6 +1025,8 @@
     langToggle.innerHTML = (app.lang === "pt" ? "🇧🇷 pt-br" : "🇺🇸 en-us") + ' <span class="chev">▾</span>';
     document.querySelectorAll("[data-tiktok-link]").forEach(function(el){ el.href = TIKTOK_URL; });
 
+    document.documentElement.setAttribute("data-level", app.level);
+
     var labelKeys = { easy:"diffEasy", medium:"diffMed", hard:"diffHard" };
     difftabsEl.innerHTML = LEVEL_ORDER.map(function(lv){
       return '<button class="difftab' + (lv === app.level ? " active" : "") + '" data-level="' + lv + '">'
@@ -1058,7 +1111,8 @@
     var key = todayKey();
     var s = S();
     var label = game === "vocab" ? s.vocabEyebrow : s.kanjiEyebrow;
-    var text = s.shareText(label, dayNumber(key), st.lastScore, QUESTIONS_PER_DAY, squareRow(st.lastGrid));
+    var levelName = s[{ easy:"diffEasy", medium:"diffMed", hard:"diffHard" }[app.level]];
+    var text = s.shareText(label, levelName, dayNumber(key), st.lastScore, QUESTIONS_PER_DAY, squareRow(st.lastGrid));
     if (navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(text).catch(function(){});
     }
